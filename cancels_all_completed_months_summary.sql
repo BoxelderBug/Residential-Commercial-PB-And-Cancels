@@ -1,8 +1,8 @@
 -- ============================================================
--- Cancels Summary — All Completed Months  (vr_230 + t_locations)
+-- Cancels Summary — All Completed Months YTD  (vr_230 + t_locations)
 -- Total cancel count and total annual value broken out by
 -- month and Residential vs. Commercial for all fully-closed
--- calendar months through end of last month.
+-- calendar months of the current year through end of last month.
 -- ============================================================
 
 SELECT
@@ -19,7 +19,8 @@ SELECT
 FROM [dbo].[vr_230]      AS c
 JOIN [dbo].[t_locations] AS l ON l.[location_key] = c.[location_key]
 WHERE
-    c.[plan_end_dt] < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)
+    c.[plan_end_dt] >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1)
+    AND c.[plan_end_dt]  < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)
 GROUP BY
     DATEADD(MONTH, DATEDIFF(MONTH, 0, c.[plan_end_dt]), 0)
    ,YEAR(c.[plan_end_dt])

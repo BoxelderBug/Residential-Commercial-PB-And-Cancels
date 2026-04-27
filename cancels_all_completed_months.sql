@@ -1,8 +1,8 @@
 -- ============================================================
--- Cancels — All Completed Months  (vr_230 + t_locations)
+-- Cancels — All Completed Months YTD  (vr_230 + t_locations)
 -- Returns every plan record whose plan_end_dt falls within a
--- fully-closed calendar month, with residential vs. commercial
--- classification from t_locations.
+-- fully-closed calendar month of the current year, with
+-- residential vs. commercial classification from t_locations.
 -- ============================================================
 
 SELECT
@@ -37,7 +37,8 @@ SELECT
 FROM [dbo].[vr_230]        AS c
 JOIN [dbo].[t_locations]   AS l ON l.[location_key] = c.[location_key]
 WHERE
-    c.[plan_end_dt] < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)
+    c.[plan_end_dt] >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1)
+    AND c.[plan_end_dt]  < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)
 ORDER BY
     c.[plan_end_dt]
    ,[res_com]
@@ -65,7 +66,8 @@ SELECT
 FROM [dbo].[vr_230]        AS c
 JOIN [dbo].[t_locations]   AS l ON l.[location_key] = c.[location_key]
 WHERE
-    c.[plan_end_dt] < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)
+    c.[plan_end_dt] >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1)
+    AND c.[plan_end_dt]  < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)
 GROUP BY
     DATEADD(MONTH, DATEDIFF(MONTH, 0, c.[plan_end_dt]), 0)
    ,YEAR(c.[plan_end_dt])
