@@ -1,32 +1,43 @@
 -- ============================================================
--- Cancels — Prior Calendar Month
--- Returns all cancel records from the month immediately before
--- the current month, regardless of when this query is run.
+-- Cancels — Prior Calendar Month  (vr_230)
+-- Returns plan records whose plan_end_dt (cancellation date)
+-- falls within the calendar month immediately before today.
 -- ============================================================
 
 SELECT
-    [branch_key]
+    [client_key]
+   ,[branch_key]
    ,[branch_name]
-   ,[service_key]
-   ,[service_code]
-   ,[service_description]
-   ,[user_key]
+   ,[location_url]
+   ,[location_key]
+   ,[location_name]
+   ,[address]
+   ,[address2]
+   ,[city]
+   ,[state]
+   ,[zip9]
+   ,[location_plan_url]
+   ,[location_plan_key]
+   ,[service_only_flag]
+   ,[invoice_only_flag]
+   ,[plan_key]
+   ,[plan_description]
+   ,[plan_begin_dt]
+   ,[plan_end_dt]
+   ,[days_effective]
+   ,[active_flag]
+   ,[price]
+   ,[annual_value]
+   ,[comment]
    ,[technician_key]
    ,[technician_name]
-   ,[plan_dt]
-   ,[quantity]
-   ,[total]
-FROM [dbo].[vr_210]
+FROM [dbo].[vr_230]
 WHERE
-    -- Prior month window (inclusive start, exclusive end)
-    [plan_dt] >= DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()) - 1, 0)
-    AND [plan_dt]  < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()),     0)
-
-    -- Uncomment and adjust if vr_210 is not already scoped to cancels:
-    -- AND [service_code] = 'CANCEL'
-    -- AND [service_description] LIKE '%cancel%'
+    -- Plan ended (cancelled) within the prior calendar month
+    [plan_end_dt] >= DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()) - 1, 0)
+    AND [plan_end_dt]  < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()),     0)
 
 ORDER BY
     [branch_name]
-   ,[plan_dt]
-   ,[technician_name];
+   ,[plan_end_dt]
+   ,[location_name];

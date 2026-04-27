@@ -1,66 +1,72 @@
 -- ============================================================
--- Cancels — All Completed Months Year-to-Date
--- Returns every cancel record for all fully-closed calendar
--- months from the start of the data through end of last month.
--- "Completed month" = any month whose end date has already
--- passed, i.e., everything before the 1st of the current month.
+-- Cancels — All Completed Months  (vr_230)
+-- Returns every plan record whose plan_end_dt falls within a
+-- fully-closed calendar month (i.e., before the 1st of the
+-- current month).  Excludes the current in-progress month.
 -- ============================================================
 
 SELECT
-    [branch_key]
+    [client_key]
+   ,[branch_key]
    ,[branch_name]
-   ,[service_key]
-   ,[service_code]
-   ,[service_description]
-   ,[user_key]
+   ,[location_url]
+   ,[location_key]
+   ,[location_name]
+   ,[address]
+   ,[address2]
+   ,[city]
+   ,[state]
+   ,[zip9]
+   ,[location_plan_url]
+   ,[location_plan_key]
+   ,[service_only_flag]
+   ,[invoice_only_flag]
+   ,[plan_key]
+   ,[plan_description]
+   ,[plan_begin_dt]
+   ,[plan_end_dt]
+   ,[days_effective]
+   ,[active_flag]
+   ,[price]
+   ,[annual_value]
+   ,[comment]
    ,[technician_key]
    ,[technician_name]
-   ,[plan_dt]
-   ,[quantity]
-   ,[total]
-FROM [dbo].[vr_210]
+FROM [dbo].[vr_230]
 WHERE
-    -- Exclude the current (in-progress) month
-    [plan_dt] < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)
-
-    -- Uncomment and adjust if vr_210 is not already scoped to cancels:
-    -- AND [service_code] = 'CANCEL'
-    -- AND [service_description] LIKE '%cancel%'
+    -- All fully-closed months; excludes the current in-progress month
+    [plan_end_dt] < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)
 
 ORDER BY
-    [plan_dt]
+    [plan_end_dt]
    ,[branch_name]
-   ,[technician_name];
+   ,[location_name];
 
 
 -- ============================================================
--- Optional: summarized version — totals rolled up by month
--- and branch for reporting / charting use
+-- Optional: monthly summary rollup by branch
 -- ============================================================
 
 /*
 SELECT
-    YEAR([plan_dt])                              AS [year]
-   ,MONTH([plan_dt])                             AS [month_num]
-   ,DATENAME(MONTH, [plan_dt])                   AS [month_name]
-   ,CAST(DATEADD(MONTH,
-        DATEDIFF(MONTH, 0, [plan_dt]), 0)
-        AS DATE)                                 AS [month_start]
+    CAST(DATEADD(MONTH,
+        DATEDIFF(MONTH, 0, [plan_end_dt]), 0)
+        AS DATE)                          AS [cancel_month]
+   ,DATENAME(MONTH, [plan_end_dt])        AS [month_name]
+   ,YEAR([plan_end_dt])                   AS [year]
    ,[branch_name]
-   ,SUM([total])                                 AS [total_cancels]
-   ,SUM([quantity])                              AS [total_quantity]
-   ,COUNT(*)                                     AS [record_count]
-FROM [dbo].[vr_210]
+   ,COUNT(*)                              AS [cancel_count]
+   ,SUM([annual_value])                   AS [total_annual_value]
+   ,SUM([price])                          AS [total_price]
+FROM [dbo].[vr_230]
 WHERE
-    [plan_dt] < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)
-    -- AND [service_code] = 'CANCEL'
+    [plan_end_dt] < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)
 GROUP BY
-    YEAR([plan_dt])
-   ,MONTH([plan_dt])
-   ,DATENAME(MONTH, [plan_dt])
-   ,DATEADD(MONTH, DATEDIFF(MONTH, 0, [plan_dt]), 0)
+    DATEADD(MONTH, DATEDIFF(MONTH, 0, [plan_end_dt]), 0)
+   ,DATENAME(MONTH, [plan_end_dt])
+   ,YEAR([plan_end_dt])
    ,[branch_name]
 ORDER BY
-    [month_start]
+    [cancel_month]
    ,[branch_name];
 */
